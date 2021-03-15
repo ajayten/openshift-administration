@@ -3,3 +3,5 @@
 .terraform*
 keys.tf
 training*
+inventory
+sshconfig

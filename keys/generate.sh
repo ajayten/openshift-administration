@@ -26,6 +26,25 @@ provider() {
     append ''
 }
 
+ansible_helper() {
+    local sshconf = "sshconfig"
+    local inv = "inventory"
+
+    echo '[all:vars]' >> $inv
+    echo 'ansible_user=ubuntu' >> $inv
+    echo 'ansible_become=false' >> $inv
+    echo 'ansible_ssh_args=-o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no -F sshconfig' >> $inv
+    echo '' >> $inv
+    echo '[all]' >> $inv
+    echo "training[1:${NUM}].cc-openshift.de"  >> $inv
+
+    for i in $(seq 1 $NUM); do
+        echo "Host training${i}.cc-openshift.de" >> $sshconf
+        echo "  IdentityFile training${i}" >> $sshconf
+        echo "" >> $sshconf
+    done
+}
+
 add_key() {
     if [[ -z "$1" || -z "$2" ]]; then
         echo "Invalid parameter" > /dev/stderr
@@ -58,8 +77,11 @@ for i in $(seq 1 $NUM); do
     add_key "$i" "${PUB_KEY}" 
 done
 
+ansible_helper
+
 terraform init
 
+terraform_return=-1
 if [[ $? -eq 0 ]]; then
     terraform apply
 fi
