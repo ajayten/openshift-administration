@@ -9,6 +9,9 @@ apt-get -y dist-upgrade
 # autoremove unused stuff
 apt-get -y autoremove
 
+# install useful packages
+apt-get install -y python3-certbot python3-certbot-dns-route53 certbot jq 
+
 # download and extract openshift installer and client
 cd /tmp
 wget https://github.com/openshift/okd/releases/download/4.6.0-0.okd-2021-02-14-205305/openshift-client-linux-4.6.0-0.okd-2021-02-14-205305.tar.gz
