@@ -1,0 +1,38 @@
+filebeat.inputs:
+# Default input
+- type: log
+  paths:
+    - /var/log/kube-apiserver/audit.log
+    - /var/log/openshift-apiserver/audit.log
+  processors:
+  - decode_json_fields:
+      fields:
+      - message
+      process_array: true
+      max_depth: 2
+      target: ""
+      overwrite_keys: true
+      add_error_key: true
+      document_id: auditID
+  - timestamp:
+      ignore_missing: true
+      field: stageTimestamp
+      layouts:
+      - '2006-01-02T15:04:05.999Z'
+
+processors:
+  - add_cloud_metadata:
+      providers:
+      - aws
+  - add_host_metadata:
+      netinfo.enabled: false
+
+setup.ilm.enabled: false
+
+output.elasticsearch:
+  bulk_max_size: 2500
+  worker: 2
+  hosts: ['${ELASTICSEARCH_HOST:elasticsearch}:${ELASTICSEARCH_PORT:9200}']
+  username: ${ELASTICSEARCH_USERNAME}
+  password: ${ELASTICSEARCH_PASSWORD}
+  protocol: ${ELASTICSEARCH_PROTOCOL}
