@@ -1,0 +1,272 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: capacity
+spec:
+  groups:
+    - name: capacity.rules
+      rules:
+        - expr: |
+            sum(sum(kube_pod_container_resource_requests_cpu_cores) by(pod, node) * on(pod) group_left max(kube_pod_container_status_running) by (pod)) by (node)
+          record: capacity:node:cpu:requests
+        - expr: |
+            sum(sum(kube_pod_container_resource_limits_cpu_cores) by(pod, node) * on(pod) group_left max(kube_pod_container_status_running) by (pod)) by (node)
+          record: capacity:node:cpu:limits
+        - expr: |
+            kube_node_status_allocatable_cpu_cores * on(node) group_left(role) kube_node_role
+          record: capacity:node:cpu:available
+        - expr: |
+            label_replace(instance:node_cpu:rate:sum, "node", "$1", "instance", "(.+)")
+          record: capacity:node:cpu:usage
+        - expr: |
+            sum(sum(kube_pod_container_resource_requests_memory_bytes) by(pod, node) * on(pod) group_left max(kube_pod_container_status_running) by (pod)) by (node)
+          record: capacity:node:memory:requests
+        - expr: |
+            sum(sum(kube_pod_container_resource_limits_memory_bytes) by(pod, node) * on(pod) group_left max(kube_pod_container_status_running) by (pod)) by (node)
+          record: capacity:node:memory:limits
+        - expr: |
+            kube_node_status_allocatable_memory_bytes * on(node) group_left(role) kube_node_role
+          record: capacity:node:memory:available
+        - expr: |
+            sum(sum(container_memory_working_set_bytes) by (pod, node) * on(pod) group_left max(kube_pod_container_status_running) by (pod)) by (node)
+          record: capacity:node:memory:usage
+
+        - expr: |
+            sum(sum(kube_pod_container_resource_requests_cpu_cores) by(pod, namespace) * on(pod) group_left max(kube_pod_container_status_running) by (pod)) by (namespace)
+          record: capacity:namespace:cpu:requests
+        - expr: |
+            sum(sum(kube_pod_container_resource_limits_cpu_cores) by(pod, namespace) * on(pod) group_left max(kube_pod_container_status_running) by (pod)) by (namespace)
+          record: capacity:namespace:cpu:limits
+        - expr: |
+            sum(sum(node_namespace_pod_container:container_cpu_usage_seconds_total:sum_rate) by (pod, namespace) * on(pod) group_left max(kube_pod_container_status_running) by (pod)) by (namespace)
+          record: capacity:namespace:cpu:usage
+        - expr: |
+            sum(sum(kube_pod_container_resource_requests_memory_bytes) by (pod, namespace) * on(pod) group_left max(kube_pod_container_status_running) by (pod)) by (namespace)
+          record: capacity:namespace:memory:requests
+        - expr: |
+            sum(sum(kube_pod_container_resource_limits_memory_bytes) by(pod, namespace) * on(pod) group_left max(kube_pod_container_status_running) by (pod)) by (namespace)
+          record: capacity:namespace:memory:limits
+        - expr: |
+            sum(sum(container_memory_working_set_bytes) by (pod, namespace) * on(pod) group_left max(kube_pod_container_status_running) by (pod)) by (namespace)
+          record: capacity:namespace:memory:usage
+
+        - expr: |
+            sum(sum(sum(container_memory_working_set_bytes) by (pod, node) * on(pod) group_left max(kube_pod_container_status_running) by (pod)) by (node) * on(node) group_left(role) kube_node_role) by (role)
+          record: capacity:role:memory:usage
+        - expr: |
+            sum(sum(sum(kube_pod_container_resource_requests_memory_bytes) by(pod, node) * on(pod) group_left max(kube_pod_container_status_running) by (pod)) by (node) * on(node) group_left(role) kube_node_role) by (role)
+          record: capacity:role:memory:requests
+
+    - name: capacity-pods.alerts
+      rules:
+        - alert: NodePodsCapacityHigh
+          annotations:
+            message: >-
+              Number of pods on node {{ $labels.node }} is high
+          expr: |
+             (kube_node_status_allocatable_pods - on(node) sum(kube_pod_info * on(pod) group_left max(kube_pod_container_status_running) by (pod)) by (node)) < 30
+          for: 8h
+          labels:
+            severity: high
+        - alert: NodePodsCapacityCritical
+          annotations:
+            message: >-
+              Number of pods on node {{ $labels.node }} is critical
+          expr: |
+             (kube_node_status_allocatable_pods - on(node) sum(kube_pod_info * on(pod) group_left max(kube_pod_container_status_running) by (pod)) by (node)) < 10
+          for: 2h
+          labels:
+            severity: critical
+    - name: capacity-cpu.alerts
+      rules:
+        - alert: NodeCpuRequestsWarning
+          annotations:
+            message: >-
+              CPU requests on node {{ $labels.node }} are increasing
+          expr: |
+             (capacity:node:cpu:requests / on(node) capacity:node:cpu:available) > 0.8
+          for: 8h
+          labels:
+            severity: warning
+        - alert: NodeCpuRequestsHigh
+          annotations:
+            message: >-
+              CPU requests on node {{ $labels.node }} are high
+          expr: |
+             (capacity:node:cpu:requests / on(node) capacity:node:cpu:available) > 0.9
+          for: 2h
+          labels:
+            severity: high
+        - alert: NodeCpuRequestsCritical
+          annotations:
+            message: >-
+              CPU requests on node {{ $labels.node }} are critical
+          expr: |
+             (capacity:node:cpu:requests / on(node) capacity:node:cpu:available) > 0.95
+          for: 1h
+          labels:
+            severity: critical
+
+        - alert: NodeCpuUsageWarning
+          annotations:
+            message: >-
+              CPU usage on node {{ $labels.node }} is increasing
+          expr: |
+             (capacity:node:cpu:usage / on(node) capacity:node:cpu:available) > 0.7
+          for: 8h
+          labels:
+            severity: warning
+        - alert: NodeCpuUsageHigh
+          annotations:
+            message: >-
+              CPU usage on node {{ $labels.node }} is high
+          expr: |
+             (capacity:node:cpu:usage / on(node) capacity:node:cpu:available) > 0.8
+          for: 4h
+          labels:
+            severity: high
+        - alert: NodeCpuUsageCritical
+          annotations:
+            message: >-
+              CPU usage on node {{ $labels.node }} is critical
+          expr: |
+             (capacity:node:cpu:usage / on(node) capacity:node:cpu:available) > 0.9
+          for: 2h
+          labels:
+            severity: critical
+
+
+    - name: capacity-memory.alerts
+      rules:
+        - alert: NodeMemoryRequestsWarning
+          annotations:
+            message: >-
+              Memory requests on node {{ $labels.node }} are increasing
+          expr: |
+             (capacity:node:memory:requests / on(node) capacity:node:memory:available) > 0.85
+          for: 8h
+          labels:
+            severity: warning
+        - alert: NodeMemoryRequestsHigh
+          annotations:
+            message: >-
+              Memory requests on node {{ $labels.node }} are high
+          expr: |
+             (capacity:node:memory:requests / on(node) capacity:node:memory:available) > 0.9
+          for: 2h
+          labels:
+            severity: high
+        - alert: NodeMemoryRequestsCritical
+          annotations:
+            message: >-
+              Memory requests on node {{ $labels.node }} are critical
+          expr: |
+             (capacity:node:memory:requests / on(node) capacity:node:memory:available) > 0.95
+          for: 1h
+          labels:
+            severity: critical
+
+        - alert: NodeMemoryUsageWarning
+          annotations:
+            message: >-
+              Memory usage on node {{ $labels.node }} is increasing
+          expr: |
+             (capacity:node:memory:usage / on(node) capacity:node:memory:available) > 0.75
+          for: 8h
+          labels:
+            severity: warning
+        - alert: NodeMemoryUsageHigh
+          annotations:
+            message: >-
+              Memory usage on node {{ $labels.node }} is high
+          expr: |
+             (capacity:node:memory:usage / on(node) capacity:node:memory:available) > 0.85
+          for: 4h
+          labels:
+            severity: high
+        - alert: NodeMemoryUsageCritical
+          annotations:
+            message: >-
+              Memory usage on node {{ $labels.node }} is critical
+          expr: |
+             (capacity:node:memory:usage / on(node) capacity:node:memory:available) > 0.9
+          for: 2h
+          labels:
+            severity: critical
+
+        - alert: ClusterAvailabilityNotice
+          expr: |
+            (capacity:role:memory:requests{role="worker"} / sum(capacity:node:memory:available{role="worker"}) by (role)) >= 0.7
+          for: 12h
+          annotations:
+            message: >-
+              The cluster memory requests are increasing. This will impact cluster availability.
+          labels:
+            severity: info
+        - alert: ClusterAvailabilityNotice2
+          expr: |
+            (capacity:role:memory:requests{role="worker"} / sum(capacity:node:memory:available{role="worker"}) by (role)) >= 0.8
+          for: 8h
+          annotations:
+            message: >-
+              The cluster memory requests are too high. Cluster availability can be impacted.
+          labels:
+            severity: warning
+        - alert: ClusterAvailabilityWarning
+          expr: |
+            (capacity:role:memory:usage{role="worker"} / sum(capacity:node:memory:available{role="worker"}) by (role)) > 0.6
+          for: 8h
+          annotations:
+            message: >-
+              The cluster memory usage is increasing. Soon there will be not enough resources to meet the availability requirements.
+          labels:
+            severity: warning
+        - alert: ClusterAvailabilityDegraded
+          expr: |
+            (capacity:role:memory:usage{role="worker"} / sum(capacity:node:memory:available{role="worker"}) by (role)) > 0.66
+          for: 12h
+          annotations:
+            message: >-
+              The cluster availability is degraded. There is not enough memory to meet the availability requirements.
+          labels:
+            severity: high
+        - alert: ClusterAvailabilityCritical
+          expr: |
+            (capacity:role:memory:usage{role="worker"} / sum(capacity:node:memory:available{role="worker"}) by (role)) >= 0.85
+          for: 4h
+          annotations:
+            message: >-
+              The cluster availability is critical. Reduce memory usage or add additional resources.
+          labels:
+            severity: critical
+
+
+    - name: capacity-storage.alerts
+      rules:
+        - alert: PvcStorageWarning
+          annotations:
+            message: >-
+              Storage on PVC {{ $labels.persistentvolumeclaim }} in namespace {{ $labels.namespace }} is increasing
+          expr: |
+             (1 - (kubelet_volume_stats_available_bytes / on(persistentvolumeclaim, namespace) kubelet_volume_stats_capacity_bytes)) > 0.75
+          for: 8h
+          labels:
+            severity: warning
+        - alert: PvcStorageHigh
+          annotations:
+            message: >-
+              Storage on PVC {{ $labels.persistentvolumeclaim }} in namespace {{ $labels.namespace }} is high
+          expr: |
+             (1 - (kubelet_volume_stats_available_bytes / on(persistentvolumeclaim, namespace) kubelet_volume_stats_capacity_bytes)) > 0.85
+          for: 1h
+          labels:
+            severity: high
+        - alert: PvcStorageCritical
+          annotations:
+            message: >-
+              Storage on PVC {{ $labels.persistentvolumeclaim }} in namespace {{ $labels.namespace }} is critical
+          expr: |
+             (1 - (kubelet_volume_stats_available_bytes / on(persistentvolumeclaim, namespace) kubelet_volume_stats_capacity_bytes)) > 0.95
+          for: 30m
+          labels:
+            severity: critical
