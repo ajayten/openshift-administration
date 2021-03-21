@@ -2,7 +2,6 @@ apiVersion: monitoring.coreos.com/v1
 kind: PrometheusRule
 metadata:
   name: capacity
-  namespace: openshift-monitoring
 spec:
   groups:
     - name: capacity.rules
@@ -68,6 +67,8 @@ spec:
              (kube_node_status_allocatable_pods - on(node) sum(kube_pod_info * on(pod) group_left max(kube_pod_container_status_running) by (pod)) by (node)) < 30
           for: 8h
           labels:
+            type: capacity
+            source: user
             severity: high
         - alert: NodePodsCapacityCritical
           annotations:
@@ -77,6 +78,8 @@ spec:
              (kube_node_status_allocatable_pods - on(node) sum(kube_pod_info * on(pod) group_left max(kube_pod_container_status_running) by (pod)) by (node)) < 10
           for: 2h
           labels:
+            type: capacity
+            source: user
             severity: critical
     - name: capacity-cpu.alerts
       rules:
@@ -88,6 +91,8 @@ spec:
              (capacity:node:cpu:requests / on(node) capacity:node:cpu:available) > 0.8
           for: 8h
           labels:
+            type: capacity
+            source: user
             severity: warning
         - alert: NodeCpuRequestsHigh
           annotations:
@@ -97,6 +102,8 @@ spec:
              (capacity:node:cpu:requests / on(node) capacity:node:cpu:available) > 0.9
           for: 2h
           labels:
+            type: capacity
+            source: user
             severity: high
         - alert: NodeCpuRequestsCritical
           annotations:
@@ -106,6 +113,8 @@ spec:
              (capacity:node:cpu:requests / on(node) capacity:node:cpu:available) > 0.95
           for: 1h
           labels:
+            type: capacity
+            source: user
             severity: critical
 
         - alert: NodeCpuUsageWarning
@@ -116,6 +125,8 @@ spec:
              (capacity:node:cpu:usage / on(node) capacity:node:cpu:available) > 0.7
           for: 8h
           labels:
+            type: capacity
+            source: user
             severity: warning
         - alert: NodeCpuUsageHigh
           annotations:
@@ -125,6 +136,8 @@ spec:
              (capacity:node:cpu:usage / on(node) capacity:node:cpu:available) > 0.8
           for: 4h
           labels:
+            type: capacity
+            source: user
             severity: high
         - alert: NodeCpuUsageCritical
           annotations:
@@ -134,6 +147,8 @@ spec:
              (capacity:node:cpu:usage / on(node) capacity:node:cpu:available) > 0.9
           for: 2h
           labels:
+            type: capacity
+            source: user
             severity: critical
 
 
@@ -147,6 +162,8 @@ spec:
              (capacity:node:memory:requests / on(node) capacity:node:memory:available) > 0.85
           for: 8h
           labels:
+            type: capacity
+            source: user
             severity: warning
         - alert: NodeMemoryRequestsHigh
           annotations:
@@ -156,6 +173,8 @@ spec:
              (capacity:node:memory:requests / on(node) capacity:node:memory:available) > 0.9
           for: 2h
           labels:
+            type: capacity
+            source: user
             severity: high
         - alert: NodeMemoryRequestsCritical
           annotations:
@@ -165,6 +184,8 @@ spec:
              (capacity:node:memory:requests / on(node) capacity:node:memory:available) > 0.95
           for: 1h
           labels:
+            type: capacity
+            source: user
             severity: critical
 
         - alert: NodeMemoryUsageWarning
@@ -175,6 +196,8 @@ spec:
              (capacity:node:memory:usage / on(node) capacity:node:memory:available) > 0.75
           for: 8h
           labels:
+            type: capacity
+            source: user
             severity: warning
         - alert: NodeMemoryUsageHigh
           annotations:
@@ -184,6 +207,8 @@ spec:
              (capacity:node:memory:usage / on(node) capacity:node:memory:available) > 0.85
           for: 4h
           labels:
+            type: capacity
+            source: user
             severity: high
         - alert: NodeMemoryUsageCritical
           annotations:
@@ -193,6 +218,8 @@ spec:
              (capacity:node:memory:usage / on(node) capacity:node:memory:available) > 0.9
           for: 2h
           labels:
+            type: capacity
+            source: user
             severity: critical
 
         - alert: ClusterAvailabilityNotice
@@ -203,6 +230,8 @@ spec:
             message: >-
               The cluster memory requests are increasing. This will impact cluster availability.
           labels:
+            type: capacity
+            source: user
             severity: info
         - alert: ClusterAvailabilityNotice2
           expr: |
@@ -212,6 +241,8 @@ spec:
             message: >-
               The cluster memory requests are too high. Cluster availability can be impacted.
           labels:
+            type: capacity
+            source: user
             severity: warning
         - alert: ClusterAvailabilityWarning
           expr: |
@@ -221,6 +252,8 @@ spec:
             message: >-
               The cluster memory usage is increasing. Soon there will be not enough resources to meet the availability requirements.
           labels:
+            type: capacity
+            source: user
             severity: warning
         - alert: ClusterAvailabilityDegraded
           expr: |
@@ -230,6 +263,8 @@ spec:
             message: >-
               The cluster availability is degraded. There is not enough memory to meet the availability requirements.
           labels:
+            type: capacity
+            source: user
             severity: high
         - alert: ClusterAvailabilityCritical
           expr: |
@@ -239,35 +274,87 @@ spec:
             message: >-
               The cluster availability is critical. Reduce memory usage or add additional resources.
           labels:
+            type: capacity
+            source: user
             severity: critical
 
 
     - name: capacity-storage.alerts
       rules:
-        - alert: PvcStorageWarning
-          annotations:
-            message: >-
-              Storage on PVC {{ $labels.persistentvolumeclaim }} in namespace {{ $labels.namespace }} is increasing
-          expr: |
-             (1 - (kubelet_volume_stats_available_bytes / on(persistentvolumeclaim, namespace) kubelet_volume_stats_capacity_bytes)) > 0.75
-          for: 8h
-          labels:
-            severity: warning
         - alert: PvcStorageHigh
           annotations:
             message: >-
-              Storage on PVC {{ $labels.persistentvolumeclaim }} in namespace {{ $labels.namespace }} is high
+              Storage on PVC {{ $labels.persistentvolumeclaim }} in namespace {{ $labels.namespace }} is above 90%
           expr: |
-             (1 - (kubelet_volume_stats_available_bytes / on(persistentvolumeclaim, namespace) kubelet_volume_stats_capacity_bytes)) > 0.85
-          for: 1h
+             (1 - (kubelet_volume_stats_available_bytes / on(persistentvolumeclaim, namespace) kubelet_volume_stats_capacity_bytes)) > 0.90
+          for: 30m
           labels:
+            type: capacity
+            source: user
             severity: high
         - alert: PvcStorageCritical
           annotations:
             message: >-
-              Storage on PVC {{ $labels.persistentvolumeclaim }} in namespace {{ $labels.namespace }} is critical
+              Storage on PVC {{ $labels.persistentvolumeclaim }} in namespace {{ $labels.namespace }} is critical (> 95%)
           expr: |
              (1 - (kubelet_volume_stats_available_bytes / on(persistentvolumeclaim, namespace) kubelet_volume_stats_capacity_bytes)) > 0.95
+          for: 10m
+          labels:
+            type: capacity
+            source: user
+            severity: critical
+        - alert: PvcPredictionWarning
+          for: 2h
+          labels:
+            type: capacity
+            source: user
+            severity: warning
+          annotations:
+            message: >-
+              Storage on PVC {{ $labels.persistentvolumeclaim }} in namespace {{ $labels.namespace }} will be full in 24 hours
+          expr: |
+            (1 - (predict_linear(kubelet_volume_stats_available_bytes[5h], 3600 * 24) / on(persistentvolumeclaim, namespace) kubelet_volume_stats_capacity_bytes)) >= 1
+        - alert: PvcPredictionWarning2
+          for: 1h
+          labels:
+            type: capacity
+            source: user
+            severity: warning
+          annotations:
+            message: >-
+              Storage on PVC {{ $labels.persistentvolumeclaim }} in namespace {{ $labels.namespace }} will be full in 12 hours
+          expr: |
+            (1 - (predict_linear(kubelet_volume_stats_available_bytes[3h], 3600 * 12) / on(persistentvolumeclaim, namespace) kubelet_volume_stats_capacity_bytes)) >= 1
+        - alert: PvcPredictionWarning3
+          for: 1h
+          labels:
+            type: capacity
+            source: user
+            severity: warning
+          annotations:
+            message: >-
+              Storage on PVC {{ $labels.persistentvolumeclaim }} in namespace {{ $labels.namespace }} will be full in 6 hours
+          expr: |
+            (1 - (predict_linear(kubelet_volume_stats_available_bytes[2h], 3600 * 6) / on(persistentvolumeclaim, namespace) kubelet_volume_stats_capacity_bytes)) >= 1
+        - alert: PvcPredictionHigh
           for: 30m
           labels:
+            type: capacity
+            source: user
+            severity: high
+          annotations:
+            message: >-
+              Storage on PVC {{ $labels.persistentvolumeclaim }} in namespace {{ $labels.namespace }} will be full in 3 hours
+          expr: |
+            (1 - (predict_linear(kubelet_volume_stats_available_bytes[1h], 3600 * 3) / on(persistentvolumeclaim, namespace) kubelet_volume_stats_capacity_bytes)) >= 1
+        - alert: PvcPredictionCritical
+          for: 15m
+          labels:
+            type: capacity
+            source: user
             severity: critical
+          annotations:
+            message: >-
+              Storage on PVC {{ $labels.persistentvolumeclaim }} in namespace {{ $labels.namespace }} will be full in 1 hour
+          expr: |
+            (1 - (predict_linear(kubelet_volume_stats_available_bytes[15m], 3600 * 1) / on(persistentvolumeclaim, namespace) kubelet_volume_stats_capacity_bytes)) >= 1
