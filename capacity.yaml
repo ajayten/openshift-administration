@@ -313,7 +313,7 @@ spec:
             message: >-
               Storage on PVC {{ $labels.persistentvolumeclaim }} in namespace {{ $labels.namespace }} will be full in 24 hours
           expr: |
-            (1 - (predict_linear(kubelet_volume_stats_available_bytes[5h], 3600 * 24) / on(persistentvolumeclaim, namespace) kubelet_volume_stats_capacity_bytes)) >= 1
+            (1 - (predict_linear(kubelet_volume_stats_available_bytes[5h], 3600 * 24) / on(persistentvolumeclaim, namespace, node) max_over_time(kubelet_volume_stats_capacity_bytes[5h]))) >= 1
         - alert: PvcPredictionWarning2
           for: 1h
           labels:
@@ -324,7 +324,7 @@ spec:
             message: >-
               Storage on PVC {{ $labels.persistentvolumeclaim }} in namespace {{ $labels.namespace }} will be full in 12 hours
           expr: |
-            (1 - (predict_linear(kubelet_volume_stats_available_bytes[3h], 3600 * 12) / on(persistentvolumeclaim, namespace) kubelet_volume_stats_capacity_bytes)) >= 1
+            (1 - (predict_linear(kubelet_volume_stats_available_bytes[3h], 3600 * 12) / on(persistentvolumeclaim, namespace, node) max_over_time(kubelet_volume_stats_capacity_bytes[3h]))) >= 1
         - alert: PvcPredictionWarning3
           for: 1h
           labels:
@@ -335,7 +335,7 @@ spec:
             message: >-
               Storage on PVC {{ $labels.persistentvolumeclaim }} in namespace {{ $labels.namespace }} will be full in 6 hours
           expr: |
-            (1 - (predict_linear(kubelet_volume_stats_available_bytes[2h], 3600 * 6) / on(persistentvolumeclaim, namespace) kubelet_volume_stats_capacity_bytes)) >= 1
+            (1 - (predict_linear(kubelet_volume_stats_available_bytes[2h], 3600 * 6) / on(persistentvolumeclaim, namespace, node) max_over_time(kubelet_volume_stats_capacity_bytes[2h]))) >= 1
         - alert: PvcPredictionHigh
           for: 30m
           labels:
@@ -346,7 +346,7 @@ spec:
             message: >-
               Storage on PVC {{ $labels.persistentvolumeclaim }} in namespace {{ $labels.namespace }} will be full in 3 hours
           expr: |
-            (1 - (predict_linear(kubelet_volume_stats_available_bytes[1h], 3600 * 3) / on(persistentvolumeclaim, namespace) kubelet_volume_stats_capacity_bytes)) >= 1
+            (1 - (predict_linear(kubelet_volume_stats_available_bytes[1h], 3600 * 3) / on(persistentvolumeclaim, namespace, node) max_over_time(kubelet_volume_stats_capacity_bytes[1h]))) >= 1
         - alert: PvcPredictionCritical
           for: 15m
           labels:
@@ -357,4 +357,4 @@ spec:
             message: >-
               Storage on PVC {{ $labels.persistentvolumeclaim }} in namespace {{ $labels.namespace }} will be full in 1 hour
           expr: |
-            (1 - (predict_linear(kubelet_volume_stats_available_bytes[15m], 3600 * 1) / on(persistentvolumeclaim, namespace) kubelet_volume_stats_capacity_bytes)) >= 1
+            (1 - (predict_linear(kubelet_volume_stats_available_bytes[15m], 3600 * 1) / on(persistentvolumeclaim, namespace, node) max_over_time(kubelet_volume_stats_capacity_bytes[15m]))) >= 1
