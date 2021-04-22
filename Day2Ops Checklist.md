@@ -89,7 +89,7 @@
 ### Alerts & Service Monitors
 
 
-- apply monitoring configuration `oc apply -k monitoring/`
+- [ ] apply monitoring configuration `oc apply -k monitoring/`
 
 
 
