@@ -7,10 +7,10 @@ spec:
     - name: capacity.rules
       rules:
         - expr: |
-            sum(sum(kube_pod_container_resource_requests_cpu_cores) by(pod, node) * on(pod) group_left max(kube_pod_status_phase{"Running"}) by (pod)) by (node)
+            sum(sum(kube_pod_container_resource_requests_cpu_cores) by(pod, node) * on(pod) group_left max(kube_pod_status_phase{phase="Running"}) by (pod)) by (node)
           record: capacity:node:cpu:requests
         - expr: |
-            sum(sum(kube_pod_container_resource_limits_cpu_cores) by(pod, node) * on(pod) group_left max(kube_pod_status_phase{"Running"}) by (pod)) by (node)
+            sum(sum(kube_pod_container_resource_limits_cpu_cores) by(pod, node) * on(pod) group_left max(kube_pod_status_phase{phase="Running"}) by (pod)) by (node)
           record: capacity:node:cpu:limits
         - expr: |
             kube_node_status_allocatable_cpu_cores * on(node) group_left(role) kube_node_role
@@ -19,42 +19,42 @@ spec:
             label_replace(instance:node_cpu:rate:sum, "node", "$1", "instance", "(.+)")
           record: capacity:node:cpu:usage
         - expr: |
-            sum(sum(kube_pod_container_resource_requests_memory_bytes) by(pod, node) * on(pod) group_left max(kube_pod_status_phase{"Running"}) by (pod)) by (node)
+            sum(sum(kube_pod_container_resource_requests_memory_bytes) by(pod, node) * on(pod) group_left max(kube_pod_status_phase{phase="Running"}) by (pod)) by (node)
           record: capacity:node:memory:requests
         - expr: |
-            sum(sum(kube_pod_container_resource_limits_memory_bytes) by(pod, node) * on(pod) group_left max(kube_pod_status_phase{"Running"}) by (pod)) by (node)
+            sum(sum(kube_pod_container_resource_limits_memory_bytes) by(pod, node) * on(pod) group_left max(kube_pod_status_phase{phase="Running"}) by (pod)) by (node)
           record: capacity:node:memory:limits
         - expr: |
             kube_node_status_allocatable_memory_bytes * on(node) group_left(role) kube_node_role
           record: capacity:node:memory:available
         - expr: |
-            sum(sum(container_memory_working_set_bytes) by (pod, node) * on(pod) group_left max(kube_pod_status_phase{"Running"}) by (pod)) by (node)
+            sum(sum(container_memory_working_set_bytes) by (pod, node) * on(pod) group_left max(kube_pod_status_phase{phase="Running"}) by (pod)) by (node)
           record: capacity:node:memory:usage
 
         - expr: |
-            sum(sum(kube_pod_container_resource_requests_cpu_cores) by(pod, namespace) * on(pod) group_left max(kube_pod_status_phase{"Running"}) by (pod)) by (namespace)
+            sum(sum(kube_pod_container_resource_requests_cpu_cores) by(pod, namespace) * on(pod) group_left max(kube_pod_status_phase{phase="Running"}) by (pod)) by (namespace)
           record: capacity:namespace:cpu:requests
         - expr: |
-            sum(sum(kube_pod_container_resource_limits_cpu_cores) by(pod, namespace) * on(pod) group_left max(kube_pod_status_phase{"Running"}) by (pod)) by (namespace)
+            sum(sum(kube_pod_container_resource_limits_cpu_cores) by(pod, namespace) * on(pod) group_left max(kube_pod_status_phase{phase="Running"}) by (pod)) by (namespace)
           record: capacity:namespace:cpu:limits
         - expr: |
-            sum(sum(node_namespace_pod_container:container_cpu_usage_seconds_total:sum_rate) by (pod, namespace) * on(pod) group_left max(kube_pod_status_phase{"Running"}) by (pod)) by (namespace)
+            sum(sum(node_namespace_pod_container:container_cpu_usage_seconds_total:sum_rate) by (pod, namespace) * on(pod) group_left max(kube_pod_status_phase{phase="Running"}) by (pod)) by (namespace)
           record: capacity:namespace:cpu:usage
         - expr: |
-            sum(sum(kube_pod_container_resource_requests_memory_bytes) by (pod, namespace) * on(pod) group_left max(kube_pod_status_phase{"Running"}) by (pod)) by (namespace)
+            sum(sum(kube_pod_container_resource_requests_memory_bytes) by (pod, namespace) * on(pod) group_left max(kube_pod_status_phase{phase="Running"}) by (pod)) by (namespace)
           record: capacity:namespace:memory:requests
         - expr: |
-            sum(sum(kube_pod_container_resource_limits_memory_bytes) by(pod, namespace) * on(pod) group_left max(kube_pod_status_phase{"Running"}) by (pod)) by (namespace)
+            sum(sum(kube_pod_container_resource_limits_memory_bytes) by(pod, namespace) * on(pod) group_left max(kube_pod_status_phase{phase="Running"}) by (pod)) by (namespace)
           record: capacity:namespace:memory:limits
         - expr: |
-            sum(sum(container_memory_working_set_bytes) by (pod, namespace) * on(pod) group_left max(kube_pod_status_phase{"Running"}) by (pod)) by (namespace)
+            sum(sum(container_memory_working_set_bytes) by (pod, namespace) * on(pod) group_left max(kube_pod_status_phase{phase="Running"}) by (pod)) by (namespace)
           record: capacity:namespace:memory:usage
 
         - expr: |
-            sum(sum(sum(container_memory_working_set_bytes) by (pod, node) * on(pod) group_left max(kube_pod_status_phase{"Running"}) by (pod)) by (node) * on(node) group_left(role) kube_node_role) by (role)
+            sum(sum(sum(container_memory_working_set_bytes) by (pod, node) * on(pod) group_left max(kube_pod_status_phase{phase="Running"}) by (pod)) by (node) * on(node) group_left(role) kube_node_role) by (role)
           record: capacity:role:memory:usage
         - expr: |
-            sum(sum(sum(kube_pod_container_resource_requests_memory_bytes) by(pod, node) * on(pod) group_left max(kube_pod_status_phase{"Running"}) by (pod)) by (node) * on(node) group_left(role) kube_node_role) by (role)
+            sum(sum(sum(kube_pod_container_resource_requests_memory_bytes) by(pod, node) * on(pod) group_left max(kube_pod_status_phase{phase="Running"}) by (pod)) by (node) * on(node) group_left(role) kube_node_role) by (role)
           record: capacity:role:memory:requests
 
     - name: capacity-pods.alerts
@@ -64,7 +64,7 @@ spec:
             message: >-
               Number of pods on node {{ $labels.node }} is high
           expr: |
-             (kube_node_status_allocatable_pods - on(node) sum(kube_pod_info * on(pod) group_left max(kube_pod_status_phase{"Running"}) by (pod)) by (node)) < 30
+             (kube_node_status_allocatable_pods - on(node) sum(kube_pod_info * on(pod) group_left max(kube_pod_status_phase{phase="Running"}) by (pod)) by (node)) < 30
           for: 8h
           labels:
             type: capacity
@@ -75,7 +75,7 @@ spec:
             message: >-
               Number of pods on node {{ $labels.node }} is critical
           expr: |
-             (kube_node_status_allocatable_pods - on(node) sum(kube_pod_info * on(pod) group_left max(kube_pod_status_phase{"Running"}) by (pod)) by (node)) < 10
+             (kube_node_status_allocatable_pods - on(node) sum(kube_pod_info * on(pod) group_left max(kube_pod_status_phase{phase="Running"}) by (pod)) by (node)) < 10
           for: 2h
           labels:
             type: capacity
