@@ -27,8 +27,8 @@ provider() {
 }
 
 ansible_helper() {
-    local sshconf = "sshconfig"
-    local inv = "inventory"
+    local sshconf="sshconfig"
+    local inv="inventory"
 
     echo '[all:vars]' >> $inv
     echo 'ansible_user=ubuntu' >> $inv

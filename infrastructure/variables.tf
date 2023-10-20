@@ -7,10 +7,11 @@ variable "Type" {
 variable "Zone" {
   type = string
   description = "Existing DNS zone to put openshift cluster in"
-  default = "cc-openshift.de"
+  default = "lukeelten.de"
 }
 
 variable "Teilnehmer" {
-  type = string
+  type = number
   description = "Anzahl der Teilnehmer"
+  default = 3
 }

@@ -14,11 +14,11 @@ apt-get install -y python3-certbot python3-certbot-dns-route53 certbot jq
 
 # download and extract openshift installer and client
 cd /tmp
-wget https://github.com/openshift/okd/releases/download/4.6.0-0.okd-2021-02-14-205305/openshift-client-linux-4.6.0-0.okd-2021-02-14-205305.tar.gz
-wget https://github.com/openshift/okd/releases/download/4.6.0-0.okd-2021-02-14-205305/openshift-install-linux-4.6.0-0.okd-2021-02-14-205305.tar.gz
+wget https://github.com/okd-project/okd/releases/download/4.13.0-0.okd-2023-09-30-084937/openshift-client-linux-4.13.0-0.okd-2023-09-30-084937.tar.gz
+wget https://github.com/okd-project/okd/releases/download/4.13.0-0.okd-2023-09-30-084937/openshift-install-linux-4.13.0-0.okd-2023-09-30-084937.tar.gz
 
-tar xf openshift-client-linux-4.6.0-0.okd-2021-02-14-205305.tar.gz
-tar xf openshift-install-linux-4.6.0-0.okd-2021-02-14-205305.tar.gz
+tar xf openshift-client-linux-4.13.0-0.okd-2023-09-30-084937.tar.gz
+tar xf openshift-install-linux-4.13.0-0.okd-2023-09-30-084937.tar.gz
 cp oc /usr/local/bin
 cp kubectl /usr/local/bin
 cp openshift-install /usr/local/bin
