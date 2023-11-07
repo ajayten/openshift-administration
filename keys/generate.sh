@@ -36,10 +36,10 @@ ansible_helper() {
     echo 'ansible_ssh_args=-o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no -F sshconfig' >> $inv
     echo '' >> $inv
     echo '[all]' >> $inv
-    echo "training[1:${NUM}].cc-openshift.de"  >> $inv
+    echo "training[1:${NUM}].heinlein-akademie-openshift.de"  >> $inv
 
     for i in $(seq 1 $NUM); do
-        echo "Host training${i}.cc-openshift.de" >> $sshconf
+        echo "Host training${i}.heinlein-akademie-openshift.de" >> $sshconf
         echo "  IdentityFile training${i}" >> $sshconf
         echo "" >> $sshconf
     done
