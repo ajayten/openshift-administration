@@ -2,7 +2,7 @@
 
 TF="keys.tf"
 echo "" > "$TF"
-NUM=${1:-10}
+NUM=${1:-4}
 
 append() {
     echo "$1" >> "$TF"
