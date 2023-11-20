@@ -35,3 +35,6 @@ echo "output = json" >> /home/ubuntu/.aws/config
 echo "[default]" > /home/ubuntu/.aws/credentials
 chown -R ubuntu:ubuntu /home/ubuntu/.aws
 
+echo "https://docs.openshift.com/container-platform/4.13" > /home/ubuntu/links
+
+
