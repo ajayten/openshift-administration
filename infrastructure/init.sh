@@ -10,7 +10,7 @@ apt-get -y dist-upgrade
 apt-get -y autoremove
 
 # install useful packages
-apt-get install -y python3-certbot python3-certbot-dns-route53 certbot jq 
+apt-get install -y python3-certbot python3-certbot-dns-route53 certbot jq apache2-utils
 
 # download and extract openshift installer and client
 cd /tmp
