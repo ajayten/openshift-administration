@@ -13,5 +13,5 @@ variable "Zone" {
 variable "Teilnehmer" {
   type = number
   description = "Anzahl der Teilnehmer"
-  default = 2
+  default = 12
 }

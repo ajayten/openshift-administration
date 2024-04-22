@@ -10,20 +10,21 @@ apt-get -y dist-upgrade
 apt-get -y autoremove
 
 # install useful packages
-apt-get install -y python3-certbot python3-certbot-dns-route53 certbot jq apache2-utils
+apt-get install -y python3-certbot python3-certbot-dns-route53 certbot jq apache2-utils bash-completion tree
 
 # download and extract openshift installer and client
 cd /tmp
-wget https://github.com/okd-project/okd/releases/download/4.13.0-0.okd-2023-09-03-082426/openshift-client-linux-4.13.0-0.okd-2023-09-03-082426.tar.gz
-wget https://github.com/okd-project/okd/releases/download/4.13.0-0.okd-2023-09-03-082426/openshift-install-linux-4.13.0-0.okd-2023-09-03-082426.tar.gz
+wget https://github.com/okd-project/okd/releases/download/4.15.0-0.okd-2024-02-23-163410/openshift-client-linux-4.15.0-0.okd-2024-02-23-163410.tar.gz
+wget https://github.com/okd-project/okd/releases/download/4.15.0-0.okd-2024-02-23-163410/openshift-install-linux-4.15.0-0.okd-2024-02-23-163410.tar.gz
 
-tar xf openshift-client-linux-4.13.0-0.okd-2023-09-03-082426.tar.gz
-tar xf openshift-install-linux-4.13.0-0.okd-2023-09-03-082426.tar.gz
+tar xf openshift-client-linux-4.15.0-0.okd-2024-02-23-163410.tar.gz
+tar xf openshift-install-linux-4.15.0-0.okd-2024-02-23-163410.tar.gz
+
 cp oc /usr/local/bin
 cp kubectl /usr/local/bin
 cp openshift-install /usr/local/bin
 
-echo '{"auths":{"fake":{"auth": "bar"}}}' > /home/ubuntu/pull-secret
+echo '{"auths":{"fake":{"auth": ""}}}' > /home/ubuntu/pull-secret
 chown ubuntu:ubuntu /home/ubuntu/pull-secret
 
 # make aws configuration
@@ -34,7 +35,4 @@ echo "output = json" >> /home/ubuntu/.aws/config
 
 echo "[default]" > /home/ubuntu/.aws/credentials
 chown -R ubuntu:ubuntu /home/ubuntu/.aws
-
-echo "https://docs.openshift.com/container-platform/4.13" > /home/ubuntu/links
-
 
